@@ -23,7 +23,7 @@ const respondElement = document.querySelector('#respond');
 const newElement = document.querySelector('#new');
 const restartElement = document.querySelector('#restart');
 const demoElement = document.querySelector('#demo');
-const demoCombinationElement = document.querySelector('#demo-combination');
+const combinationElement = document.querySelector('#combination');
 const helpElement = document.querySelector('help');
 
 const getHintAtIndex = (index) => helpElement.querySelector(`p:nth-of-type(${+index + 1})`);
@@ -114,6 +114,8 @@ const setStatus = (message) => statusElement.innerText = message;
 const win = () => {
   disableButton(respondElement);
   setStatus('You won!');
+  showElement(combinationElement);
+  renderLargeSet(combinationElement.querySelector('set'), combination);
 };
 
 const lose = () => {
@@ -183,7 +185,11 @@ const startGame = (restart) => {
     animationTimeout = null;
   }
   hideElement(helpElement);
-  hideElement(demoCombinationElement);
+  hideElement(combinationElement);
+  // Show live hints
+  showElement(combinationElement.querySelector('.live'));
+  // Hide demo hints
+  hideElement(combinationElement.querySelector('.demo'));
   enableButton(restartElement);
   if (restart) {
     setStatus('Let’s play it again...')
@@ -222,15 +228,19 @@ const showNextDemoAnimationFrame = () => {
 };
 
 const showDemo = () => {
-  combination = sampleCombination;
-  // Render sample combination onto demo box
-  renderLargeSet(demoCombinationElement.querySelector('set'), sampleCombination);
   // Initialize animated board
+  combination = sampleCombination;
   rows = [[-1, -1, -1, -1]];
+  // Render sample combination onto demo box
+  renderLargeSet(combinationElement.querySelector('set'), combination);
   // Hide all help hints at first
   helpElement.querySelectorAll('p').forEach(p => hideElement(p));
+  // Hide live hints
+  hideElement(combinationElement.querySelector('.live'));
+  // Show demo hints
+  showElement(combinationElement.querySelector('.demo'));
   // Display demo combination
-  showElement(demoCombinationElement);
+  showElement(combinationElement);
   // Display help container
   showElement(helpElement);
   // Disable restart because demo can not be played

@@ -40,13 +40,13 @@ buttons button {
     margin: 0 8px;
 }
 
-#demo-combination set {
+#combination set {
     max-width: 164px;
     margin: 0 auto;
     position: relative;
 }
 
-#demo-combination set hole {
+#combination set hole {
     position: relative;
     z-index: 1;
 }
@@ -78,7 +78,7 @@ help p {
 }
 
 board:before,
-#demo-combination set:before {
+#combination set:before {
     display: block;
     content: '';
     position: absolute;
@@ -91,7 +91,7 @@ board:before,
     background: url(texture.jpg);
 }
 
-#demo-combination set:before {
+#combination set:before {
     border-radius: 3px;
 }
 
