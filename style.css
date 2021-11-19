@@ -1,6 +1,7 @@
 html, body {
     padding: 0;
     margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 * {
@@ -22,7 +23,11 @@ main {
     justify-items: center;
 }
 
-p {
+#rules {
+    margin: 0 0 -16px;
+}
+
+article p {
     margin: 0 0 16px;
     color: #668686;
 }
@@ -35,16 +40,45 @@ buttons button {
     margin: 0 8px;
 }
 
+#demo-combination set {
+    max-width: 164px;
+    margin: 0 auto;
+    position: relative;
+}
+
+#demo-combination set hole {
+    position: relative;
+    z-index: 1;
+}
+
 board {
     width: 300px;
-    padding: 24px;
+    padding: 24px 24px 16px;
     border-radius: 10px;
     display: flex;
     flex-flow: column nowrap;
     position: relative;
 }
 
-board:before {
+help {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 12px;
+}
+
+help p {
+    position: absolute;
+    background: #ffffff88;
+    padding: 4px 24px;
+    margin: 0;
+}
+
+board:before,
+#demo-combination set:before {
     display: block;
     content: '';
     position: absolute;
@@ -54,12 +88,15 @@ board:before {
     bottom: 0;
     border-radius: 10px;
     filter: brightness(1.6);
-    background: url(https://naldzgraphics.net/wp-content/uploads/2014/09/4-dark-wood-tile-texture.jpg);
+    background: url(texture.jpg);
+}
+
+#demo-combination set:before {
+    border-radius: 3px;
 }
 
 board:after {
     content: 'goki';
-    font-family: Arial, Helvetica, sans-serif;
     color: #800000;
     font-weight: bold;
     margin-top: 8px;

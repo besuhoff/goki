@@ -23,16 +23,24 @@
 </script>
 
 <main>
-    <article><p>In this game called Goki you need to guess an ordered combination of 4 coloured chips. The possible
-        colours are blue, green, yellow, orange, and red. Place an assumed combination of chips by clicking holes in a
-        larger box of an available row. Choose chip colour by iterating through 5 available colours - left mouse button
-        goes forward while right mouse click goes backwards.</p>
-    <p>Once ready with the assumption, hit "Respond!" button. I will respond with placing an unordered set of black and
-        white chips into a smaller box. Each black chip means one of your coloured chips' position and colour matches
-        exactly the colour and the position of a chip in my combination. Each white chip means that you guessed the
-        colour of one of my chips but placed it in a different position. Empty holes mean that all the rest of the chips
-        in my combination don't match the colour of any of yours.</p>
-    <p>Think carefully! If you fill up the whole board before guessing the combination, you lose.</p></article>
+    <article id="rules">
+        <p>
+            In this game called Goki you need to guess an ordered combination of 4 coloured chips. The possible colours
+            are blue, green, yellow, orange, and red. There might be multiple chips of the same color in a combination.
+        </p>
+        <p>
+            Place an assumed combination of chips by clicking holes in a larger box of an available row. Choose chip
+            colour by iterating through 5 available colours - left mouse button goes forward while right mouse click
+            goes backwards.
+        </p>
+        <p>Once ready with the assumption, hit "Respond!" button. I will respond with placing an unordered set of black
+            and white chips into a smaller box. Each black chip means one of your coloured chips' position and colour
+            matches exactly the colour and the position of a chip in my combination. Each white chip means that you
+            guessed the colour of one of my chips but placed it in a different position. Empty holes mean that all the
+            rest of the chips in my combination don't match the colour of any of yours.
+        </p>
+        <p>Think carefully! If you fill up the whole board before guessing the combination, you lose.</p>
+    </article>
     <h2 id="status"></h2>
     <buttons>
         <button id="new">
@@ -41,9 +49,28 @@
         <button id="restart">
             Restart game
         </button>
+        <button id="demo">
+            Show demo
+        </button>
 
     </buttons>
-    <board></board>
+    <article id="demo-combination" hidden>
+        <p>In this demo game, I'm thinking of this combination:</p>
+        <set class="large">
+            <hole></hole>
+            <hole></hole>
+            <hole></hole>
+            <hole></hole>
+        </set>
+    </article>
+    <board>
+        <help hidden>
+            <p class="top" style="bottom: 4px">The red is in its place, the yellow is someplace else, others are
+                absent</p>
+            <p class="bottom" style="bottom: 122px">One of the oranges is in place, the other is someplace else</p>
+            <p class="top" style="bottom: 166px">All of the items are in their place now, but incorrect positions</p>
+        </help>
+    </board>
 
     <buttons>
         <button id="respond" disabled>

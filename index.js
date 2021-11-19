@@ -3,15 +3,37 @@ let combination = [];
 let rows = [];
 const rowElements = [];
 
+// Demo purposes
+const sampleCombination = [2, 3, 3, 4];
+const sampleRows = [
+  [0, 1, 2, 4],
+  [0, 1, 3, 3],
+  [4, 2, 3, 3],
+  [4, 3, 2, 3],
+  [3, 4, 2, 3],
+  [2, 3, 3, 4],
+  [-1, -1, -1, -1],
+];
+let animationTimeout = null;
+
+// DOM elements
 const statusElement = document.querySelector('#status');
 const boardElement = document.querySelector('board');
 const respondElement = document.querySelector('#respond');
 const newElement = document.querySelector('#new');
 const restartElement = document.querySelector('#restart');
+const demoElement = document.querySelector('#demo');
+const demoCombinationElement = document.querySelector('#demo-combination');
+const helpElement = document.querySelector('help');
+
+const getHintAtIndex = (index) => helpElement.querySelector(`p:nth-of-type(${+index + 1})`);
+
+// Render board from template
+const template = document.querySelector('#row').innerText;
 
 for (let i = 0; i < 10; i++) {
   const rowElement = document.createElement('row');
-  rowElement.innerHTML = document.querySelector('#row').innerText;
+  rowElement.innerHTML = template;
   rowElements.unshift(rowElement);
   boardElement.appendChild(rowElement);
 }
@@ -71,24 +93,41 @@ const getMatch = (suggestion, combination) => {
   };
 };
 
-const enableRespondButton = () => {
-  respondElement.removeAttribute('disabled');
+const enableButton = (buttonElement) => {
+  buttonElement.removeAttribute('disabled');
 };
 
-const disableRespondButton = () => {
-  respondElement.setAttribute('disabled', 'disabled');
+const disableButton = (buttonElement) => {
+  buttonElement.setAttribute('disabled', 'disabled');
+};
+
+const showElement = (element) => {
+  element.removeAttribute('hidden');
+};
+
+const hideElement = (element) => {
+  element.setAttribute('hidden', 'hidden');
 };
 
 const setStatus = (message) => statusElement.innerText = message;
 
 const win = () => {
-  disableRespondButton();
+  disableButton(respondElement);
   setStatus('You won!');
 };
 
 const lose = () => {
-  disableRespondButton();
+  disableButton(respondElement);
   setStatus('You lost!');
+};
+
+const renderLargeSet = (setElement, row) => {
+  setElement.querySelectorAll('hole').forEach((holeEl, holeIndex) => {
+    holeEl.classList.remove(...colors);
+    if (row) {
+      holeEl.classList.add(colors[row[holeIndex]]);
+    }
+  });
 };
 
 const renderRows = () => {
@@ -99,12 +138,7 @@ const renderRows = () => {
     } else {
       rowEl.classList.remove('active');
     }
-    rowEl.querySelectorAll('set.large hole').forEach((holeEl, holeIndex) => {
-      holeEl.classList.remove(...colors);
-      if (row) {
-        holeEl.classList.add(colors[row[holeIndex]]);
-      }
-    });
+    renderLargeSet(rowEl.querySelector('set.large'), row);
 
     rowEl.querySelectorAll('set.small hole').forEach((holeEl) => holeEl.classList.remove('black', 'white'));
 
@@ -125,10 +159,10 @@ const renderRows = () => {
     }
   });
 
-  if (rows[rows.length - 1].every(hole => hole >= 0)) {
-    enableRespondButton();
+  if (rows[rows.length - 1].every((holeValue) => holeValue >= 0)) {
+    enableButton(respondElement);
   } else {
-    disableRespondButton();
+    disableButton(respondElement);
   }
 };
 
@@ -143,23 +177,80 @@ const respond = () => {
 };
 
 const startGame = (restart) => {
+  // Clear currently running demo animation if any
+  if (animationTimeout) {
+    clearTimeout(animationTimeout);
+    animationTimeout = null;
+  }
+  hideElement(helpElement);
+  hideElement(demoCombinationElement);
+  enableButton(restartElement);
   if (restart) {
     setStatus('Let’s play it again...')
   } else {
     setStatus('Let’s play...');
     generateCombination();
   }
-  rows = [
-    [-1, -1, -1, -1]
-  ];
+  rows = [[-1, -1, -1, -1]];
   renderRows();
 };
 
+const showNextDemoAnimationFrame = () => {
+  const currentAnimatedRow = rows[rows.length - 1];
+
+  const index = currentAnimatedRow.indexOf(-1);
+
+  if (index === -1) {
+    // Append new row to an animated set
+    rows.push([-1, -1, -1, -1]);
+
+    switch(rows.length) {
+      case 2: showElement(getHintAtIndex(0)); break;
+      case 3: showElement(getHintAtIndex(1)); break;
+      case 6: showElement(getHintAtIndex(2)); break;
+    }
+
+    // If we didn't reach the end yet, apply longer pause and proceed
+    if (sampleRows[rows.length - 1].some((value) => value !== -1)) {
+      animationTimeout = setTimeout(showNextDemoAnimationFrame, 5000);
+    }
+  } else {
+    currentAnimatedRow[index] = sampleRows[rows.length - 1][index];
+    animationTimeout = setTimeout(showNextDemoAnimationFrame, 1000);
+  }
+  renderRows();
+};
+
+const showDemo = () => {
+  combination = sampleCombination;
+  // Render sample combination onto demo box
+  renderLargeSet(demoCombinationElement.querySelector('set'), sampleCombination);
+  // Initialize animated board
+  rows = [[-1, -1, -1, -1]];
+  // Hide all help hints at first
+  helpElement.querySelectorAll('p').forEach(p => hideElement(p));
+  // Display demo combination
+  showElement(demoCombinationElement);
+  // Display help container
+  showElement(helpElement);
+  // Disable restart because demo can not be played
+  disableButton(restartElement);
+  setStatus('This is a demo game');
+  // Clear currently running demo animation if any
+  if (animationTimeout) {
+    clearTimeout(animationTimeout);
+    animationTimeout = null;
+  }
+  // Clear the board
+  renderRows();
+  // Place first chip in 2 seconds
+  animationTimeout = setTimeout(showNextDemoAnimationFrame, 2000);
+};
+
 respondElement.addEventListener('click', respond);
-
 restartElement.addEventListener('click', () => startGame(true));
-
 newElement.addEventListener('click', () => startGame());
+demoElement.addEventListener('click', () => showDemo());
 
 boardElement.addEventListener('mouseup', (event) => {
   const el = event.target;
