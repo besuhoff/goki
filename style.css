@@ -23,6 +23,24 @@ main {
     justify-items: center;
 }
 
+languages {
+    display: flex;
+    justify-self: end;
+}
+
+languages lang {
+    display: block;
+    border-left: 1px solid #000;
+    padding-left: 8px;
+    margin-left: 8px;
+}
+
+languages lang:first-child {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+}
+
 #rules {
     margin: 0 0 -16px;
 }
