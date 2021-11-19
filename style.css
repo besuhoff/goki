@@ -36,33 +36,49 @@ buttons button {
 }
 
 board {
-    display: block;
     width: 300px;
     padding: 24px;
     border-radius: 10px;
-    background: url(https://naldzgraphics.net/wp-content/uploads/2014/09/4-dark-wood-tile-texture.jpg);
     display: flex;
     flex-flow: column nowrap;
+    position: relative;
+}
+
+board:before {
+    display: block;
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 10px;
+    filter: brightness(1.6);
+    background: url(https://naldzgraphics.net/wp-content/uploads/2014/09/4-dark-wood-tile-texture.jpg);
 }
 
 board:after {
     content: 'goki';
     font-family: Arial, Helvetica, sans-serif;
-    color: #590000;
+    color: #800000;
     font-weight: bold;
     margin-top: 8px;
     text-align: right;
+    position: relative;
+    z-index: 1;
 }
 
 row {
     display: flex;
+    position: relative;
+    z-index: 1;
 }
 
 set {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border: 2px solid #110d0add;
+    border: 2px solid #30251cde;
     border-radius: 5px;
     height: 40px;
     flex: 1 1 auto;
@@ -79,7 +95,7 @@ set.large {
 hole {
     display: block;
     border-radius: 50%;
-    background: #110d0aaa;
+    background: #30251cab;
     height: 15px;
     width: 15px;
 }
@@ -91,38 +107,38 @@ set.small hole {
 
 set.small hole.black {
     background: #000;
-    outline: 1px solid #000;
+    outline: 2px solid #000;
 }
 
 
 set.small hole.white {
     background: #eee;
-    outline: 1px solid #eee;
-}
-
-set.large hole.green {
-    background: #0a9314;
-    outline: 1px solid #0a9314;
+    outline: 2px solid #eee;
 }
 
 set.large hole.blue {
-    background: #0875d3;
-    outline: 1px solid #0875d3;
+    background: #138cf6;
+    outline: 1px solid #138cf6;
+}
+
+set.large hole.green {
+    background: #0db518;
+    outline: 1px solid #0db518;
 }
 
 set.large hole.yellow {
-    background: #dbcb0e;
-    outline: 1px solid #dbcb0e;
+    background: #f3e43f;
+    outline: 1px solid #f3e43f;
 }
 
 set.large hole.orange {
-    background: #e17200;
-    outline: 1px solid #e17200;
+    background: #ff8100;
+    outline: 1px solid #ff8100;
 }
 
 set.large hole.red {
-    background: #c90000;
-    outline: 1px solid #c90000;
+    background: #db2121;
+    outline: 1px solid #db2121;
 }
 
 row.active set.large hole:hover {
