@@ -150,7 +150,7 @@ const renderLargeSet = (setElement, row) => {
 const renderRows = () => {
   rowElements.forEach((rowEl, rowIndex) => {
     const row = rows[rowIndex];
-    if (rowIndex === rows.length - 1) {
+    if (rowIndex === rows.length - 1 && !hasWon()) {
       rowEl.classList.add('active');
     } else {
       rowEl.classList.remove('active');
@@ -170,7 +170,7 @@ const renderRows = () => {
         holeEl.classList.add(match[holeIndex]);
       });
 
-      if (blacks === combination.length) {
+      if (hasWon()) {
         win();
       }
     }
@@ -191,6 +191,10 @@ const respond = () => {
 
   rows.push([-1, -1, -1, -1]);
   renderRows();
+};
+
+const hasWon = () => {
+  return rows[rows.length - 2] && rows[rows.length - 2].every((item, index) => item === combination[index]);
 };
 
 const startGame = (restart) => {
@@ -280,7 +284,7 @@ demoElement.addEventListener('click', () => showDemo());
 boardElement.addEventListener('mouseup', (event) => {
   const el = event.target;
 
-  if (el.tagName.toLowerCase() === 'hole' && el.parentElement.classList.contains('large') && el.parentElement.parentElement === rowElements[rows.length - 1]) {
+  if (!hasWon() && el.tagName.toLowerCase() === 'hole' && el.parentElement.classList.contains('large') && el.parentElement.parentElement === rowElements[rows.length - 1]) {
     const index = [...el.parentElement.children].indexOf(el);
     toggleItem(index, event.button === 2 ? -1 : 1);
     renderRows();
@@ -290,7 +294,7 @@ boardElement.addEventListener('mouseup', (event) => {
 boardElement.addEventListener('contextmenu', (event) => {
   const el = event.target;
 
-  if (el.tagName.toLowerCase() === 'hole' && el.parentElement.classList.contains('large') && el.parentElement.parentElement === rowElements[rows.length - 1]) {
+  if (!hasWon() && el.tagName.toLowerCase() === 'hole' && el.parentElement.classList.contains('large') && el.parentElement.parentElement === rowElements[rows.length - 1]) {
     event.preventDefault();
   }
 });

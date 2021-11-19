@@ -150,6 +150,7 @@ set.large {
 hole {
     display: block;
     border-radius: 50%;
+    -webkit-background-clip: padding-box;
     background: #30251cab;
     height: 15px;
     width: 15px;
