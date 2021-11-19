@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Goki</title>
+    <link rel="stylesheet" type="text/css" href="style.css?version=2">
+    <link rel="icon" type="image/ico" href="favicon.ico"></head>
+<body>
+<script id="translation-won" type="text/template">Вы победили!</script>
+<script id="translation-lost" type="text/template">Вы проиграли!</script>
+<script id="translation-lets-play" type="text/template">Давайте сыграем...</script>
+<script id="translation-lets-play-again" type="text/template">Давайте сыграем заново...</script>
+<script id="translation-demo" type="text/template">Демо-игра</script>
+<script id="row" type="text/template">
+    <set class="small">
+        <hole></hole>
+        <hole></hole>
+        <hole></hole>
+        <hole></hole>
+    </set>
+    <set class="large">
+        <hole></hole>
+        <hole></hole>
+        <hole></hole>
+        <hole></hole>
+    </set>
+</script>
+
+<main>
+    <article id="rules">
+        <p>
+            В этой игре под названием Goki вам нужно отгадать упорядоченную комбинацию из четырех цветных фишек.
+            Возможные цвета — голубой, зеленый, желтый, оранжевый и красный. В комбинации могут присутствовать несколько
+            фишек одного цвета.
+        </p>
+        <p>
+            Разместите предполагаемую комбинацию, кликая на дырочки в большей секции того ряда, который сейчас играет.
+            Пять цветов идут подряд — левый клик листает вперед, правый — в обратном направлении.
+        </p>
+        <p>
+            Когда готовы проверить предположение, жмите "Отвечай!". Я отвечаю размещением неупорядоченного набора из
+            нескольких белых и черных фишек в соответствующей меньшей секции играющего ряда. Каждая черная фишка
+            означает, что вы угадали позицию и цвет какой-то из фишек в моей комбинации. Белая фишка означает, что такой
+            цвет присутствует в моей комбинации, но позиция фишки неверна. Пустые дырочки означают, что остальные фишки
+            в моей комбинации не совпадают с оставшимися в вашей даже по цвету.
+        </p>
+        <p>Подумайте хорошенько! Если израсходуете все ходы до того, как отгадаете комбинацию — вы проиграли.</p>
+    </article>
+    <h2 id="status"></h2>
+    <buttons class="top">
+        <button id="new">
+            Новая игра
+        </button>
+        <button id="restart">
+            Начать заново
+        </button>
+        <button id="demo">
+            Показать демо
+        </button>
+
+    </buttons>
+    <article id="combination" hidden>
+        <p class="demo" hidden>В этой демо-игре я загадал такую комбинацию:</p>
+        <p class="live" hidden>Вы угадали правильно! Вот загаданная комбинация:</p>
+        <set class="large">
+            <hole></hole>
+            <hole></hole>
+            <hole></hole>
+            <hole></hole>
+        </set>
+    </article>
+    <board>
+        <help hidden>
+            <p class="top" style="bottom: 4px">Красная на своем месте, желтая не на своем месте, остальных нет</p>
+            <p class="bottom" style="bottom: 122px">Один оранжевый на своем месте, другой не на своем</p>
+            <p class="top" style="bottom: 166px">Все фишки угаданы, но ни одна не на правильной позиции</p>
+        </help>
+    </board>
+
+    <buttons class="bottom">
+        <button id="respond" disabled>
+            Отвечай!
+        </button>
+    </buttons>
+</main>
+
+<script type="text/javascript" src="index.js"></script>
+</body>
+</html>

@@ -40,6 +40,11 @@ const getHintAtIndex = (index) => helpElement.querySelector(`p:nth-of-type(${+in
 
 // Render board from template
 const template = document.querySelector('#row').innerText;
+const translationWon = document.querySelector('#translation-won').innerText;
+const translationLost = document.querySelector('#translation-lost').innerText;
+const translationLetsPlay = document.querySelector('#translation-lets-play').innerText;
+const translationLetsPlayAgain = document.querySelector('#translation-lets-play-again').innerText;
+const translationDemo = document.querySelector('#translation-demo').innerText;
 
 for (let i = 0; i < 10; i++) {
   const rowElement = document.createElement('row');
@@ -123,14 +128,14 @@ const setStatus = (message) => statusElement.innerText = message;
 
 const win = () => {
   disableButton(respondElement);
-  setStatus('You won!');
+  setStatus(translationWon);
   showElement(combinationElement);
   renderLargeSet(combinationElement.querySelector('set'), combination);
 };
 
 const lose = () => {
   disableButton(respondElement);
-  setStatus('You lost!');
+  setStatus(translationLost);
 };
 
 const renderLargeSet = (setElement, row) => {
@@ -202,9 +207,9 @@ const startGame = (restart) => {
   hideElement(combinationElement.querySelector('.demo'));
   enableButton(restartElement);
   if (restart) {
-    setStatus('Let’s play it again...')
+    setStatus(translationLetsPlayAgain)
   } else {
-    setStatus('Let’s play...');
+    setStatus(translationLetsPlay);
     generateCombination();
   }
   rows = [[-1, -1, -1, -1]];
@@ -255,7 +260,7 @@ const showDemo = () => {
   showElement(helpElement);
   // Disable restart because demo can not be played
   disableButton(restartElement);
-  setStatus('This is a demo game');
+  setStatus(translationDemo);
   // Clear currently running demo animation if any
   if (animationTimeout) {
     clearTimeout(animationTimeout);
