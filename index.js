@@ -17,6 +17,7 @@ const sampleRows = [
 let animationTimeout = null;
 
 // DOM elements
+const rulesElement = document.querySelector('#rules');
 const statusElement = document.querySelector('#status');
 const boardElement = document.querySelector('board');
 const respondElement = document.querySelector('#respond');
@@ -25,6 +26,15 @@ const restartElement = document.querySelector('#restart');
 const demoElement = document.querySelector('#demo');
 const combinationElement = document.querySelector('#combination');
 const helpElement = document.querySelector('help');
+
+let easterClicks = 0;
+
+rulesElement.addEventListener('click', () => {
+  easterClicks += 1;
+  if (easterClicks === 6) {
+    document.body.classList.add('threed');
+  }
+});
 
 const getHintAtIndex = (index) => helpElement.querySelector(`p:nth-of-type(${+index + 1})`);
 
@@ -273,7 +283,11 @@ boardElement.addEventListener('mouseup', (event) => {
 });
 
 boardElement.addEventListener('contextmenu', (event) => {
-  event.preventDefault();
+  const el = event.target;
+
+  if (el.tagName.toLowerCase() === 'hole' && el.parentElement.classList.contains('large') && el.parentElement.parentElement === rowElements[rows.length - 1]) {
+    event.preventDefault();
+  }
 });
 
 startGame();

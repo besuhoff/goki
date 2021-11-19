@@ -29,7 +29,7 @@ main {
 
 article p {
     margin: 0 0 16px;
-    color: #668686;
+    color: #544439;
 }
 
 buttons {
@@ -180,4 +180,27 @@ set.large hole.red {
 
 row.active set.large hole:hover {
     cursor: pointer;
+}
+
+.threed board {
+    transform: perspective(110px) rotateX(-344deg) translateY(-42px) scale(1.2, 0.8);
+    box-shadow: 0 20px 0 -9px #684733, 0 16px 0 -6px #684833, 0 11px 0 -4px #684833, 0 6px 0 -2px #684833;
+}
+
+.threed buttons.bottom {
+    position: relative;
+}
+
+.threed buttons.bottom:before {
+    transform: translateX(-50%);
+    bottom: 418px;
+    position: absolute;
+    content: '';
+    display: block;
+    width: 100px;
+    height: 101px;
+    background: url(pepe.jpg) center top no-repeat;
+    background-size: 120px;
+    filter: brightness(1.1);
+    left: 50%;
 }
