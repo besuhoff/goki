@@ -1,79 +1,12 @@
+// Constants
 const colors = ['blue', 'green', 'yellow', 'orange', 'red'];
-let combination = [];
-let rows = [];
-const rowElements = [];
-
-// Demo purposes
-const sampleCombination = [2, 3, 3, 4];
-const sampleRows = [
-  [0, 1, 2, 4],
-  [0, 1, 3, 3],
-  [4, 2, 3, 3],
-  [4, 3, 2, 3],
-  [3, 4, 2, 3],
-  [2, 3, 3, 4],
-  [-1, -1, -1, -1],
-];
-let animationTimeout = null;
-
-// DOM elements
-const rulesElement = document.querySelector('#rules');
-const statusElement = document.querySelector('#status');
-const boardElement = document.querySelector('board');
-const respondElement = document.querySelector('#respond');
-const newElement = document.querySelector('#new');
-const restartElement = document.querySelector('#restart');
-const demoElement = document.querySelector('#demo');
-const combinationElement = document.querySelector('#combination');
-const helpElement = document.querySelector('help');
-
-let easterClicks = 0;
-
-rulesElement.addEventListener('click', () => {
-  easterClicks += 1;
-  if (easterClicks === 6) {
-    document.body.classList.add('threed');
-  }
-});
-
-const getHintAtIndex = (index) => helpElement.querySelector(`p:nth-of-type(${+index + 1})`);
-
-// Render board from template
-const template = document.querySelector('#row').innerText;
-const translationWon = document.querySelector('#translation-won').innerText;
-const translationLost = document.querySelector('#translation-lost').innerText;
-const translationLetsPlay = document.querySelector('#translation-lets-play').innerText;
-const translationLetsPlayAgain = document.querySelector('#translation-lets-play-again').innerText;
-const translationDemo = document.querySelector('#translation-demo').innerText;
-
-for (let i = 0; i < 10; i++) {
-  const rowElement = document.createElement('row');
-  rowElement.innerHTML = template;
-  rowElements.unshift(rowElement);
-  boardElement.appendChild(rowElement);
-}
-
-const getRandomColor = () => Math.floor(Math.random() * 5);
-
-const generateCombination = () => {
-  combination = [];
-  for (let i = 0; i < 4; i++) {
-    combination.push(getRandomColor());
-  }
+const modes = {
+  DEMO: 'DEMO',
+  REGULAR: 'REGULAR',
+  RESTARTED: 'RESTARTED',
 };
 
-const toggleItem = (index, direction) => {
-  const currentRow = rows[rows.length - 1];
-  currentRow[index] += direction;
-  if (currentRow[index] >= colors.length) {
-    currentRow[index] = -1;
-  }
-
-  if (currentRow[index] < -1) {
-    currentRow[index] = colors.length - 1;
-  }
-};
-
+// Math helpers
 const getMatch = (suggestion, combination) => {
   const suggestionLeftover = [...suggestion];
   const combinationLeftover = [...combination];
@@ -108,6 +41,91 @@ const getMatch = (suggestion, combination) => {
   };
 };
 
+// State
+let combination = [];
+let rows = [];
+const rowElements = [];
+let mode = null;
+
+// Demo purposes
+const demoCombination = [2, 3, 3, 4];
+const demoRows = [
+  [0, 1, 2, 4],
+  [0, 1, 3, 3],
+  [4, 2, 3, 3],
+  [4, 3, 2, 3],
+  [3, 4, 2, 3],
+  [2, 3, 3, 4],
+  [-1, -1, -1, -1],
+];
+let demoAnimationTimeout = null;
+
+// Easter :)
+let easterClicks = 0;
+
+// Selectors
+const hasWon = () => {
+  return rows[rows.length - 2] && rows[rows.length - 2].every((item, index) => item === combination[index]);
+};
+
+const hasLost = () => {
+  return rows.length > rowElements.length;
+};
+
+const hasStartedGame = () => {
+  return rows[0] && rows[0].some((value) => value !== -1);
+};
+
+const isGameActive = () => !hasWon() && !hasLost();
+
+const shouldEnableNewGameButton = () => mode !== modes.REGULAR || hasStartedGame();
+
+const shouldEnableRespondButton = () => isGameActive() && rows[rows.length - 1].every((holeValue) => holeValue >= 0);
+
+const shouldEnableRestartGameButton = () => mode !== modes.DEMO && hasStartedGame();
+
+// Actions modifying state
+const getRandomColor = () => Math.floor(Math.random() * 5);
+
+const generateCombination = () => {
+  combination = [];
+  for (let i = 0; i < 4; i++) {
+    combination.push(getRandomColor());
+  }
+};
+
+const toggleItem = (index, direction) => {
+  const currentRow = rows[rows.length - 1];
+  currentRow[index] += direction;
+  if (currentRow[index] >= colors.length) {
+    currentRow[index] = -1;
+  }
+
+  if (currentRow[index] < -1) {
+    currentRow[index] = colors.length - 1;
+  }
+};
+
+// DOM elements
+const rulesElement = document.querySelector('#rules');
+const statusElement = document.querySelector('#status');
+const boardElement = document.querySelector('board');
+const respondButtonElement = document.querySelector('#respond');
+const newGameButtonElement = document.querySelector('#new');
+const restartGameButtonElement = document.querySelector('#restart');
+const showDemoButtonElement = document.querySelector('#demo');
+const combinationElement = document.querySelector('#combination');
+const helpElement = document.querySelector('help');
+
+// Templates
+const template = document.querySelector('#row').innerText;
+const translationWon = document.querySelector('#translation-won').innerText;
+const translationLost = document.querySelector('#translation-lost').innerText;
+const translationLetsPlay = document.querySelector('#translation-lets-play').innerText;
+const translationLetsPlayAgain = document.querySelector('#translation-lets-play-again').innerText;
+const translationDemo = document.querySelector('#translation-demo').innerText;
+
+// DOM-level helpers
 const enableButton = (buttonElement) => {
   buttonElement.removeAttribute('disabled');
 };
@@ -126,16 +144,14 @@ const hideElement = (element) => {
 
 const setStatus = (message) => statusElement.innerText = message;
 
-const win = () => {
-  disableButton(respondElement);
-  setStatus(translationWon);
-  showElement(combinationElement);
-  renderLargeSet(combinationElement.querySelector('set'), combination);
-};
-
-const lose = () => {
-  disableButton(respondElement);
-  setStatus(translationLost);
+const renderBoard = () => {
+  // Render board from template
+  for (let i = 0; i < 10; i++) {
+    const rowElement = document.createElement('row');
+    rowElement.innerHTML = template;
+    rowElements.unshift(rowElement);
+    boardElement.appendChild(rowElement);
+  }
 };
 
 const renderLargeSet = (setElement, row) => {
@@ -145,6 +161,41 @@ const renderLargeSet = (setElement, row) => {
       holeEl.classList.add(colors[row[holeIndex]]);
     }
   });
+};
+
+const getHintAtIndex = (index) => helpElement.querySelector(`p:nth-of-type(${+index + 1})`);
+
+// Game logic
+const applyButtonsState = () => {
+  if (shouldEnableNewGameButton()) {
+    enableButton(newGameButtonElement);
+  } else {
+    disableButton(newGameButtonElement);
+  }
+
+  if (shouldEnableRestartGameButton()) {
+    enableButton(restartGameButtonElement);
+  } else {
+    disableButton(restartGameButtonElement);
+  }
+
+  if (shouldEnableRespondButton()) {
+    enableButton(respondButtonElement);
+  } else {
+    disableButton(respondButtonElement);
+  }
+};
+
+const win = () => {
+  setStatus(translationWon);
+  showElement(combinationElement);
+  renderLargeSet(combinationElement.querySelector('set'), combination);
+  applyButtonsState();
+};
+
+const lose = () => {
+  setStatus(translationLost);
+  applyButtonsState();
 };
 
 const renderRows = () => {
@@ -176,14 +227,14 @@ const renderRows = () => {
     }
   });
 
-  if (rows[rows.length - 1].every((holeValue) => holeValue >= 0)) {
-    enableButton(respondElement);
-  } else {
-    disableButton(respondElement);
-  }
+  applyButtonsState();
 };
 
 const respond = () => {
+  if (!shouldEnableRespondButton()) {
+    return;
+  }
+
   if (rows.length === rowElements.length) {
     lose();
     return;
@@ -193,15 +244,11 @@ const respond = () => {
   renderRows();
 };
 
-const hasWon = () => {
-  return rows[rows.length - 2] && rows[rows.length - 2].every((item, index) => item === combination[index]);
-};
-
 const startGame = (restart) => {
   // Clear currently running demo animation if any
-  if (animationTimeout) {
-    clearTimeout(animationTimeout);
-    animationTimeout = null;
+  if (demoAnimationTimeout) {
+    clearTimeout(demoAnimationTimeout);
+    demoAnimationTimeout = null;
   }
   hideElement(helpElement);
   hideElement(combinationElement);
@@ -209,10 +256,11 @@ const startGame = (restart) => {
   showElement(combinationElement.querySelector('.live'));
   // Hide demo hints
   hideElement(combinationElement.querySelector('.demo'));
-  enableButton(restartElement);
   if (restart) {
+    mode = modes.RESTARTED;
     setStatus(translationLetsPlayAgain)
   } else {
+    mode = modes.REGULAR;
     setStatus(translationLetsPlay);
     generateCombination();
   }
@@ -236,20 +284,21 @@ const showNextDemoAnimationFrame = () => {
     }
 
     // If we didn't reach the end yet, apply longer pause and proceed
-    if (sampleRows[rows.length - 1].some((value) => value !== -1)) {
-      animationTimeout = setTimeout(showNextDemoAnimationFrame, 5000);
+    if (demoRows[rows.length - 1].some((value) => value !== -1)) {
+      demoAnimationTimeout = setTimeout(showNextDemoAnimationFrame, 5000);
     }
   } else {
-    currentAnimatedRow[index] = sampleRows[rows.length - 1][index];
-    animationTimeout = setTimeout(showNextDemoAnimationFrame, 1000);
+    currentAnimatedRow[index] = demoRows[rows.length - 1][index];
+    demoAnimationTimeout = setTimeout(showNextDemoAnimationFrame, 1000);
   }
   renderRows();
 };
 
 const showDemo = () => {
   // Initialize animated board
-  combination = sampleCombination;
+  combination = demoCombination;
   rows = [[-1, -1, -1, -1]];
+  mode = modes.DEMO;
   // Render sample combination onto demo box
   renderLargeSet(combinationElement.querySelector('set'), combination);
   // Hide all help hints at first
@@ -262,24 +311,28 @@ const showDemo = () => {
   showElement(combinationElement);
   // Display help container
   showElement(helpElement);
-  // Disable restart because demo can not be played
-  disableButton(restartElement);
   setStatus(translationDemo);
   // Clear currently running demo animation if any
-  if (animationTimeout) {
-    clearTimeout(animationTimeout);
-    animationTimeout = null;
+  if (demoAnimationTimeout) {
+    clearTimeout(demoAnimationTimeout);
+    demoAnimationTimeout = null;
   }
   // Clear the board
   renderRows();
   // Place first chip in 2 seconds
-  animationTimeout = setTimeout(showNextDemoAnimationFrame, 2000);
+  demoAnimationTimeout = setTimeout(showNextDemoAnimationFrame, 2000);
 };
 
-respondElement.addEventListener('click', respond);
-restartElement.addEventListener('click', () => startGame(true));
-newElement.addEventListener('click', () => startGame());
-demoElement.addEventListener('click', () => showDemo());
+// Event listeners
+respondButtonElement.addEventListener('click', respond);
+restartGameButtonElement.addEventListener('click', () => startGame(true));
+newGameButtonElement.addEventListener('click', () => startGame());
+showDemoButtonElement.addEventListener('click', () => showDemo());
+document.addEventListener('keyup', (event) => {
+  if (event.key === 'Enter') {
+    respond();
+  }
+});
 
 boardElement.addEventListener('mouseup', (event) => {
   const el = event.target;
@@ -288,6 +341,7 @@ boardElement.addEventListener('mouseup', (event) => {
     const index = [...el.parentElement.children].indexOf(el);
     toggleItem(index, event.button === 2 ? -1 : 1);
     renderRows();
+    applyButtonsState();
   }
 });
 
@@ -299,4 +353,13 @@ boardElement.addEventListener('contextmenu', (event) => {
   }
 });
 
+rulesElement.addEventListener('click', () => {
+  easterClicks += 1;
+  if (easterClicks === 6) {
+    document.body.classList.add('threed');
+  }
+});
+
+// Initialize
+renderBoard();
 startGame();

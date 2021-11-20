@@ -161,40 +161,58 @@ set.small hole {
     height: 10px;
 }
 
-set.small hole.black {
-    background: #000;
-    outline: 2px solid #000;
+set.small hole.black,
+set.small hole.white {
+    border: 2px solid;
+    margin: -2px;
+    width: 14px;
+    height: 14px;
 }
 
+set.small hole.black {
+    background-color: #000;
+    border-color: #000;
+}
 
 set.small hole.white {
-    background: #eee;
-    outline: 2px solid #eee;
+    background-color: #eee;
+    border-color: #eee;
+}
+
+set.large hole.blue,
+set.large hole.green,
+set.large hole.yellow,
+set.large hole.orange,
+set.large hole.red {
+    border: 1px solid;
+    margin: -1px;
+    width: 17px;
+    height: 17px;
 }
 
 set.large hole.blue {
-    background: #138cf6;
-    outline: 1px solid #138cf6;
+    background-color: #138cf6;
+    border-color: #138cf6;
 }
 
 set.large hole.green {
-    background: #0db518;
-    outline: 1px solid #0db518;
+    background-color: #0db518;
+    border-color: #0db518;
 }
 
 set.large hole.yellow {
-    background: #f3e43f;
-    outline: 1px solid #f3e43f;
+    background-color: #f3e43f;
+    border-color: #f3e43f;
 }
 
 set.large hole.orange {
-    background: #ff8100;
-    outline: 1px solid #ff8100;
+    background-color: #ff8100;
+    border-color: #ff8100;
 }
 
 set.large hole.red {
-    background: #db2121;
-    outline: 1px solid #db2121;
+    background-color: #db2121;
+    border-color: #db2121;
 }
 
 row.active set.large hole:hover {

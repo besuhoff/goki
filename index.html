@@ -4,13 +4,13 @@
     <base href="/goki/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Goki</title>
-    <link rel="stylesheet" type="text/css" href="style.css?version=3">
+    <title>Goki Mastermind</title>
+    <link rel="stylesheet" type="text/css" href="style.css?version=4">
     <link rel="icon" type="image/ico" href="favicon.ico"></head>
 <body>
 <script id="translation-won" type="text/template">You won!</script>
 <script id="translation-lost" type="text/template">You lost!</script>
-<script id="translation-lets-play" type="text/template">Let’s play...</script>
+<script id="translation-lets-play" type="text/template">I’m ready to play!</script>
 <script id="translation-lets-play-again" type="text/template">Let’s play this again...</script>
 <script id="translation-demo" type="text/template">This is a demo game</script>
 <script id="row" type="text/template">
@@ -35,13 +35,14 @@
     </languages>
     <article id="rules">
         <p>
-            In this game called Goki you need to guess an ordered combination of 4 coloured chips. The possible colours
-            are blue, green, yellow, orange, and red. There might be multiple chips of the same color in a combination.
+            In this game called Mastermind you need to guess an ordered combination of 4 coloured chips. The possible
+            colours are blue, green, yellow, orange, and red. There might be multiple chips of the same color in a
+            combination.
         </p>
         <p>
-            Place an assumed combination of chips by clicking holes in a larger box of an available row. Choose chip
-            colour by iterating through 5 available colours - left mouse button goes forward while right mouse click
-            goes backwards.
+            Rows are enabled bottom to top. Place an assumed combination of chips by clicking holes in a larger box of
+            an available row. Choose chip colour by iterating through 5 available colours - left mouse click thumbs them
+            through forward while right mouse click goes backwards.
         </p>
         <p>Once ready with the assumption, hit "Respond!" button. I will respond with placing an unordered set of black
             and white chips into a smaller box. Each black chip means one of your coloured chips' position and colour
@@ -49,7 +50,14 @@
             guessed the colour of one of my chips but placed it in a different position. Empty holes mean that all the
             rest of the chips in my combination don't match the colour of any of yours.
         </p>
-        <p>Think carefully! If you fill up the whole board before guessing the combination, you lose.</p>
+        <p>
+            After my response, move one level up and place another assumption based on what you discovered about the
+            previous one. Think carefully! If you fill up the whole board before guessing the combination, you lose.
+        </p>
+        <p>
+            The game is started right away. Hit "New game" to start again with the new combination. Hit "Restart game"
+            to play the same combination again. Hit "Show demo" to see the animated sample game.
+        </p>
     </article>
     <h2 id="status"></h2>
     <buttons class="top">
