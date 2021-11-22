@@ -1,0 +1,11 @@
+{
+  "name": "goki-mastermind",
+  "description": "Mastermind board game",
+  "version": "0.0.4",
+  "repository": "https://github.com/besuhoff/goki",
+  "readme": "https://github.com/besuhoff/goki/blob/master/README.md",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^9.0.0"
+  }
+}
