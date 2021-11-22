@@ -1,11 +1,15 @@
 // Constants
-const colors = ['blue', 'green', 'yellow', 'orange', 'red'];
-const combinationLength = 4;
-const modes = {
+const COLORS = ['blue', 'green', 'yellow', 'orange', 'red'];
+const COMBINATION_LENGTH = 4;
+const ROW_NUMBER = 10;
+const MODES = {
   DEMO: 'DEMO',
   REGULAR: 'REGULAR',
   RESTARTED: 'RESTARTED',
 };
+
+const DEMO_TIME_BETWEEN_GUESSES = 5000;
+const DEMO_TIME_TO_PLACE_CHIP = 1000;
 
 // Math helpers
 const getValueWithinBounds = (value, min, max) => {
@@ -61,162 +65,14 @@ const getRandomColor = () => Math.floor(Math.random() * 5);
 
 const getRandomCombination = () => {
   const combination = [];
-  for (let i = 0; i < combinationLength; i++) {
+  for (let i = 0; i < COMBINATION_LENGTH; i++) {
     combination.push(getRandomColor());
   }
 
   return combination;
 };
 
-// State
-const state = {
-  combination: [],
-  rows: [],
-  rowElements: [],
-  mode: null,
-
-// Demo purposes
-  demoCombination: [2, 3, 3, 4],
-  demoRows: [
-    [0, 1, 2, 4],
-    [0, 1, 3, 3],
-    [4, 2, 3, 3],
-    [4, 3, 2, 3],
-    [3, 4, 2, 3],
-    [2, 3, 3, 4],
-    [-1, -1, -1, -1],
-  ],
-  demoAnimationTimeout: null,
-
-  // Easter :)
-  easterClicks: 0,
-};
-
-// Selectors
-const rowsSelector = () => state.rows;
-const currentRowSelector = () => {
-  const rows = rowsSelector();
-  return rows[rows.length - 1];
-};
-
-const rowElementsSelector = () => state.rowElements;
-const combinationSelector = () => state.combination;
-const modeSelector = () => state.mode;
-
-const demoCombinationSelector = () => state.demoCombination;
-const demoRowsSelector = () => state.demoRows;
-const demoAnimationTimeoutSelector = () => state.demoAnimationTimeout;
-
-const easterClicksSelector = () => state.easterClicks;
-
-const hasWonSelector = () => {
-  const rows = rowsSelector();
-  const combination = combinationSelector();
-
-  return rows[rows.length - 2] && rows[rows.length - 2].every((item, index) => item === combination[index]);
-};
-
-const hasLostSelector = () => {
-  const rows = rowsSelector();
-  const rowElements = rowElementsSelector();
-
-  return rows.length > rowElements.length;
-};
-
-const hasStartedGame = () => {
-  const rows = rowsSelector();
-
-  return rows[0] && rows[0].some((value) => value !== -1);
-};
-
-const isGameActiveSelector = () => !hasWonSelector() && !hasLostSelector();
-
-const shouldEnableNewGameButton = () => modeSelector() !== modes.REGULAR || hasStartedGame();
-
-const shouldEnableRespondButtonSelector = () => {
-  const rows = rowsSelector();
-  const isGameActive = isGameActiveSelector();
-
-  return isGameActive && rows[rows.length - 1].every((holeValue) => holeValue >= 0);
-};
-
-const shouldEnableRestartGameButton = () => modeSelector() !== modes.DEMO && hasStartedGame();
-
-// Actions modifying state
-const setCombination = (combination) => {
-  state.combination = combination;
-};
-
-const setRows = (rows) => {
-  state.rows = rows;
-};
-
-const addRow = (row) => {
-  const rows = rowsSelector();
-  setRows([
-    ...rows,
-    row
-  ]);
-};
-
-const setRowAtIndex = (rowIndex, row) => {
-  const rows = rowsSelector();
-  setRows([
-    ...rows.slice(0, rowIndex),
-    row,
-    ...rows.slice(rowIndex + 1)
-  ]);
-};
-
-const setCurrentRow = (row) => {
-  const rows = rowsSelector();
-  setRowAtIndex(rows.length - 1, row);
-};
-
-const setCurrentRowHoleValue = (holeIndex, value) => {
-  const currentRow = currentRowSelector();
-  setCurrentRow(
-    [
-      ...currentRow.slice(0, holeIndex),
-      value,
-      ...currentRow.slice(holeIndex + 1),
-    ]
-  );
-};
-
-const toggleItem = (index, direction) => {
-  const currentRow = currentRowSelector();
-  const valueAtIndex = currentRow[index];
-
-  let valueToSet = getValueWithinBounds(valueAtIndex + direction, -1, colors.length - 1);
-
-  setCurrentRowHoleValue(index, valueToSet);
-};
-
-const setRowElements = (rowElements) => {
-  state.rowElements = rowElements;
-};
-
-const renderBoard = () => {
-  const elements = [];
-
-  for (let i = 0; i < 10; i++) {
-    const rowElement = document.createElement('row');
-    rowElement.innerHTML = template;
-    elements.unshift(rowElement);
-    boardElement.appendChild(rowElement);
-  }
-
-  setRowElements(elements);
-};
-
-const setDemoAnimationTimeout = (demoAnimationTimeout) => {
-  state.demoAnimationTimeout = demoAnimationTimeout;
-};
-
-const resetDemoAnimationTimeout = () => {
-  state.demoAnimationTimeout = null;
-};
+const areCombinationsMatching = (a, b) => a.every((el, index) => el === b[index]);
 
 // DOM elements
 const rulesElement = document.querySelector('#rules');
@@ -258,24 +114,202 @@ const setStatus = (message) => statusElement.innerText = message;
 
 const renderLargeSet = (setElement, row) => {
   setElement.querySelectorAll('hole').forEach((holeEl, holeIndex) => {
-    holeEl.classList.remove(...colors);
+    holeEl.classList.remove(...COLORS);
     if (row && row[holeIndex] >= 0) {
-      holeEl.classList.add(colors[row[holeIndex]]);
+      holeEl.classList.add(COLORS[row[holeIndex]]);
     }
   });
 };
 
+const appendRowFromTemplate = () => {
+  const rowElement = document.createElement('row');
+  rowElement.innerHTML = template;
+  boardElement.appendChild(rowElement);
+  return rowElement;
+};
+
 const getHintAtIndex = (index) => helpElement.querySelector(`p:nth-of-type(${+index + 1})`);
+
+// State
+const state = {
+  combination: [],
+  rows: [],
+  rowElements: [],
+  mode: null,
+  isCurrentRowChecked: false,
+
+// Demo purposes
+  demoCombination: [2, 3, 3, 4],
+  demoRows: [
+    [0, 1, 2, 4],
+    [0, 1, 3, 3],
+    [4, 2, 3, 3],
+    [4, 3, 2, 3],
+    [3, 4, 2, 3],
+    [2, 3, 3, 4],
+    [-1, -1, -1, -1],
+  ],
+  demoAnimationTimeout: null,
+
+  // Easter :)
+  easterClicks: 0,
+};
+
+// Selectors
+const rowsSelector = () => state.rows;
+const currentRowSelector = () => {
+  const rows = rowsSelector();
+  return rows.length > 0 ? rows[rows.length - 1] : null;
+};
+
+const rowElementsSelector = () => state.rowElements;
+const combinationSelector = () => state.combination;
+const modeSelector = () => state.mode;
+const isCurrentRowCheckedSelector = () => state.isCurrentRowChecked;
+
+const demoCombinationSelector = () => state.demoCombination;
+const demoRowsSelector = () => state.demoRows;
+const demoAnimationTimeoutSelector = () => state.demoAnimationTimeout;
+
+const easterClicksSelector = () => state.easterClicks;
+
+const hasWinningCombinationSelector = () => {
+  const currentRow = currentRowSelector();
+  const combination = combinationSelector();
+
+  return currentRow ? areCombinationsMatching(currentRow, combination) : false;
+};
+
+const hasWonSelector = () => {
+  const hasWinningCombination = hasWinningCombinationSelector();
+  const isCurrentRowChecked = isCurrentRowCheckedSelector();
+  return isCurrentRowChecked && hasWinningCombination;
+};
+
+const hasLostSelector = () => {
+  const rows = rowsSelector();
+  const hasWinningCombination = hasWinningCombinationSelector();
+  const isCurrentRowChecked = isCurrentRowCheckedSelector();
+  return rows.length === ROW_NUMBER && isCurrentRowChecked && !hasWinningCombination;
+};
+
+const hasStartedGameSelector = () => {
+  const rows = rowsSelector();
+
+  return rows[0] && rows[0].some((value) => value !== -1);
+};
+
+const isGameActiveSelector = () => !hasWonSelector() && !hasLostSelector();
+
+const shouldEnableNewGameButtonSelector = () => modeSelector() !== MODES.REGULAR || hasStartedGameSelector();
+
+const shouldEnableRespondButtonSelector = () => {
+  const currentRow = currentRowSelector();
+  const isGameActive = isGameActiveSelector();
+
+  return isGameActive && currentRow.every((holeValue) => holeValue >= 0);
+};
+
+const shouldEnableRestartGameButtonSelector = () => modeSelector() !== MODES.DEMO && hasStartedGameSelector();
+
+// Actions modifying state
+const setCombination = (combination) => {
+  state.combination = combination;
+};
+
+const setRows = (rows) => {
+  state.rows = rows;
+};
+
+const setMode = (mode) => {
+  state.mode = mode;
+};
+
+const setIsCurrentRowChecked = () => {
+  state.isCurrentRowChecked = true;
+};
+
+const resetIsCurrentRowChecked = () => {
+  state.isCurrentRowChecked = false;
+};
+
+const addRow = (row) => {
+  const rows = rowsSelector();
+  setRows([
+    ...rows,
+    row
+  ]);
+  resetIsCurrentRowChecked();
+};
+
+const setRowAtIndex = (rowIndex, row) => {
+  const rows = rowsSelector();
+  setRows([
+    ...rows.slice(0, rowIndex),
+    row,
+    ...rows.slice(rowIndex + 1)
+  ]);
+};
+
+const setCurrentRow = (row) => {
+  const rows = rowsSelector();
+  setRowAtIndex(rows.length - 1, row);
+};
+
+const setCurrentRowHoleValue = (holeIndex, value) => {
+  const currentRow = currentRowSelector();
+  setCurrentRow(
+    [
+      ...currentRow.slice(0, holeIndex),
+      value,
+      ...currentRow.slice(holeIndex + 1),
+    ]
+  );
+};
+
+const toggleItem = (index, direction) => {
+  const currentRow = currentRowSelector();
+  const valueAtIndex = currentRow[index];
+
+  let valueToSet = getValueWithinBounds(valueAtIndex + direction, -1, COLORS.length - 1);
+
+  setCurrentRowHoleValue(index, valueToSet);
+};
+
+const setRowElements = (rowElements) => {
+  state.rowElements = rowElements;
+};
+
+const renderBoard = () => {
+  const elements = [];
+
+  for (let i = 0; i < ROW_NUMBER; i++) {
+    const rowElement = appendRowFromTemplate();
+    elements.unshift(rowElement);
+  }
+
+  setRowElements(elements);
+};
+
+const setDemoAnimationTimeout = (demoAnimationTimeout) => {
+  state.demoAnimationTimeout = demoAnimationTimeout;
+};
+
+const resetDemoAnimationTimeout = () => {
+  state.demoAnimationTimeout = null;
+};
+
+const addEasterClicks = () => state.easterClicks += 1;
 
 // Game logic
 const applyButtonsState = () => {
-  if (shouldEnableNewGameButton()) {
+  if (shouldEnableNewGameButtonSelector()) {
     enableButton(newGameButtonElement);
   } else {
     disableButton(newGameButtonElement);
   }
 
-  if (shouldEnableRestartGameButton()) {
+  if (shouldEnableRestartGameButtonSelector()) {
     enableButton(restartGameButtonElement);
   } else {
     disableButton(restartGameButtonElement);
@@ -288,30 +322,28 @@ const applyButtonsState = () => {
   }
 };
 
-const win = () => {
+const displayWinningStatus = () => {
   const combination = combinationSelector();
 
   setStatus(translationWon);
   showElement(combinationElement);
   renderLargeSet(combinationElement.querySelector('set'), combination);
-  applyButtonsState();
 };
 
-const lose = () => {
+const displayLostStatus = () => {
   setStatus(translationLost);
-  applyButtonsState();
 };
 
 const renderRows = () => {
   const rowElements = rowElementsSelector();
   const rows = rowsSelector();
   const combination = combinationSelector();
-  const hasWon = hasWonSelector();
   const isGameActive = isGameActiveSelector();
+  const isCurrentRowChecked = isCurrentRowCheckedSelector();
 
   rowElements.forEach((rowEl, rowIndex) => {
     const row = rows[rowIndex];
-    if (rowIndex === rows.length - 1 && !hasWon) {
+    if (rowIndex === rows.length - 1 && isGameActive) {
       rowEl.classList.add('active');
     } else {
       rowEl.classList.remove('active');
@@ -320,7 +352,7 @@ const renderRows = () => {
 
     rowEl.querySelectorAll('set.small hole').forEach((holeEl) => holeEl.classList.remove('black', 'white'));
 
-    if (rowIndex < rows.length - 1 || (rowIndex === rows.length - 1 && !isGameActive)) {
+    if (rowIndex < rows.length - 1 || (rowIndex === rows.length - 1 && isCurrentRowChecked)) {
       const {
         blacks,
         whites
@@ -332,10 +364,6 @@ const renderRows = () => {
       rowEl.querySelectorAll('set.small hole').forEach((holeEl, holeIndex) => {
         holeEl.classList.add(match[holeIndex]);
       });
-
-      if (hasWon) {
-        win();
-      }
     }
   });
 
@@ -345,17 +373,22 @@ const renderRows = () => {
 const respond = () => {
   const rows = rowsSelector();
   const rowElements = rowElementsSelector();
+  const hasWinningCombination = hasWinningCombinationSelector();
 
   if (!shouldEnableRespondButtonSelector()) {
     return;
   }
 
-  if (rows.length === rowElements.length) {
-    lose();
-    return;
+  setIsCurrentRowChecked();
+
+  if (hasWinningCombination) {
+    displayWinningStatus();
+  } else if (rows.length === rowElements.length) {
+    displayLostStatus();
+  } else {
+    addRow([-1, -1, -1, -1]);
   }
 
-  rows.push([-1, -1, -1, -1]);
   renderRows();
 };
 
@@ -377,10 +410,10 @@ const startGame = (restart) => {
 
   // Set appropriate mode and status
   if (restart) {
-    state.mode = modes.RESTARTED;
+    setMode(MODES.RESTARTED);
     setStatus(translationLetsPlayAgain)
   } else {
-    state.mode = modes.REGULAR;
+    setMode(MODES.REGULAR);
     setStatus(translationLetsPlay);
     setCombination(getRandomCombination());
   }
@@ -414,13 +447,13 @@ const showNextDemoAnimationFrame = () => {
 
     // If we didn't reach the end yet, apply longer pause and proceed
     if (demoRows[rows.length - 1].some((value) => value !== -1)) {
-      setDemoAnimationTimeout(setTimeout(showNextDemoAnimationFrame, 5000));
+      setDemoAnimationTimeout(setTimeout(showNextDemoAnimationFrame, DEMO_TIME_BETWEEN_GUESSES));
     }
   } else {
     const valueToSet = demoRows[rows.length - 1][index];
     setCurrentRowHoleValue(index, valueToSet);
 
-    setDemoAnimationTimeout(setTimeout(showNextDemoAnimationFrame, 1000));
+    setDemoAnimationTimeout(setTimeout(showNextDemoAnimationFrame, DEMO_TIME_TO_PLACE_CHIP));
   }
   renderRows();
 };
@@ -430,9 +463,9 @@ const showDemo = () => {
   const demoAnimationTimeout = demoAnimationTimeoutSelector();
 
   // Initialize animated board
-  state.combination = demoCombination;
+  setCombination(demoCombination);
   setRows([[-1, -1, -1, -1]]);
-  state.mode = modes.DEMO;
+  setMode(MODES.DEMO);
   // Render sample combination onto demo box
   renderLargeSet(combinationElement.querySelector('set'), demoCombination);
   // Hide all help hints at first
@@ -478,7 +511,6 @@ boardElement.addEventListener('mouseup', (event) => {
     const index = [...el.parentElement.children].indexOf(el);
     toggleItem(index, event.button === 2 ? -1 : 1);
     renderRows();
-    applyButtonsState();
   }
 });
 
@@ -494,10 +526,9 @@ boardElement.addEventListener('contextmenu', (event) => {
 });
 
 rulesElement.addEventListener('click', () => {
+  addEasterClicks();
   let easterClicks = easterClicksSelector();
-  state.easterClicks = easterClicks + 1;
 
-  easterClicks = easterClicksSelector();
   if (easterClicks === 6) {
     document.body.classList.add('threed');
   }
@@ -508,16 +539,7 @@ renderBoard();
 startGame();
 
 window.selectors = {
-  rowsSelector,
-  rowElementsSelector,
   combinationSelector,
-  modeSelector,
-
-  demoRowsSelector,
-  demoCombinationSelector,
-  demoAnimationTimeoutSelector,
-
-  easterClicksSelector,
 };
 
 window.actions = {
@@ -525,6 +547,5 @@ window.actions = {
 };
 
 window.helpers = {
-  getRandomCombination,
   getValueWithinBounds,
 };
