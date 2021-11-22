@@ -10,13 +10,14 @@ const modes = {
 // Math helpers
 const getValueWithinBounds = (value, min, max) => {
   let valueToSet = value;
+  const rangeSize = max - min + 1;
 
   while (valueToSet > max) {
-    valueToSet -= (max - min);
+    valueToSet -= rangeSize;
   }
 
   while (valueToSet < min) {
-    valueToSet += (max - min);
+    valueToSet += rangeSize;
   }
 
   return valueToSet;
