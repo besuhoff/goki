@@ -157,7 +157,7 @@ const renderBoard = () => {
 const renderLargeSet = (setElement, row) => {
   setElement.querySelectorAll('hole').forEach((holeEl, holeIndex) => {
     holeEl.classList.remove(...colors);
-    if (row) {
+    if (row && row[holeIndex] >= 0) {
       holeEl.classList.add(colors[row[holeIndex]]);
     }
   });
