@@ -351,6 +351,7 @@ const renderRows = () => {
     renderLargeSet(rowEl.querySelector('set.large'), row);
 
     rowEl.querySelectorAll('set.small hole').forEach((holeEl) => holeEl.classList.remove('black', 'white'));
+    rowEl.classList.add('response');
 
     if (rowIndex < rows.length - 1 || (rowIndex === rows.length - 1 && isCurrentRowChecked)) {
       const {
