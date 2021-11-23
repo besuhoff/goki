@@ -419,6 +419,7 @@ const startGame = (restart) => {
     setCombination(getRandomCombination());
   }
   setRows([[-1, -1, -1, -1]]);
+  resetIsCurrentRowChecked();
   renderRows();
 };
 
@@ -466,6 +467,7 @@ const showDemo = () => {
   // Initialize animated board
   setCombination(demoCombination);
   setRows([[-1, -1, -1, -1]]);
+  resetIsCurrentRowChecked();
   setMode(MODES.DEMO);
   // Render sample combination onto demo box
   renderLargeSet(combinationElement.querySelector('set'), demoCombination);
