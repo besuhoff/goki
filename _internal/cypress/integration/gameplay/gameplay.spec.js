@@ -5,8 +5,12 @@ const rowNumber = 10;
 const combinationLength = 4;
 
 
+const visitPage = () => {
+  cy.visit('https://besuhoff.github.io/goki/');
+  // cy.visit('http://localhost:63342/goki/');
+};
+
 const getActiveHoleAtIndex = (index) => cy.get(`board row.active set.large hole:nth-of-type(${index + 1})`);
-const getResponseHoleAtIndex = (index) => cy.get(`board row.response set.small hole:nth-of-type(${index + 1})`);
 const getColorsFromCombination = (combination) => combination.map((index) => colors[index]);
 const inputCombination = (combination) => {
   combination.forEach((holeValue, index) => {
@@ -15,11 +19,11 @@ const inputCombination = (combination) => {
     }
   });
 };
+const respond = () => cy.get('#respond').click();
 
 describe('example to-do app', () => {
-  beforeEach(() => {
-    cy.visit('https://besuhoff.github.io/goki/');
-    // cy.visit('http://localhost:63342/goki/');
+  before(() => {
+    visitPage();
   });
 
   it('disables New game button by default', () => {
@@ -40,7 +44,8 @@ describe('example to-do app', () => {
   });
 
   describe('when the first move is made', () => {
-    beforeEach(() => {
+    before(() => {
+      visitPage();
       getActiveHoleAtIndex(0).click();
     });
 
@@ -62,6 +67,10 @@ describe('example to-do app', () => {
   });
 
   describe('available colors', () => {
+    beforeEach(() => {
+      visitPage();
+    });
+
     colors.forEach((color, index) => {
       describe(`when left mouse button is clicked ${index + 1} time${index > 0 ? 's' : ''}`, () => {
         it(`sets ${color} color of the chip`, () => {
@@ -76,7 +85,7 @@ describe('example to-do app', () => {
       describe(`when right mouse button is clicked ${colors.length - index} time${colors.length - index > 1 ? 's' : ''}`, () => {
         it(`sets ${color} color of the chip`, () => {
           for (let i = 0; i < index + 1; i++) {
-            getActiveHoleAtIndex(0).click({button: 2});
+            getActiveHoleAtIndex(0).click({ button: 2 });
           }
 
           getActiveHoleAtIndex(0).should('have.class', color);
@@ -87,7 +96,7 @@ describe('example to-do app', () => {
 
     [
       ['left', {}],
-      ['right', {button: 2}],
+      ['right', { button: 2 }],
     ].forEach(([button, event]) => {
       describe(`when ${button} mouse button is clicked ${colors.length + 1} times`, () => {
         it('unsets color of the chip', () => {
@@ -102,27 +111,14 @@ describe('example to-do app', () => {
   });
 
   describe('responding', () => {
-    let puzzleCombination = null;
+    let combinationSelector = null;
     let setCombination = null;
 
-    beforeEach(() => {
-      cy.window().then((win) => {
-        puzzleCombination = win.selectors.combinationSelector();
-        setCombination = win.actions.setCombination;
-      });
-    });
-
     [
-      [[0, 0, 0, 0], [0, 0, 0, 0], 4, 0],
       [[0, 0, 0, 0], [0, 0, 0, 1], 3, 0],
       [[0, 0, 0, 0], [0, 0, 1, 1], 2, 0],
       [[0, 0, 0, 1], [0, 0, 1, 1], 3, 0],
       [[1, 0, 0, 0], [0, 0, 1, 1], 1, 2],
-
-      [[1, 1, 1, 1], [1, 1, 1, 1], 4, 0],
-      [[2, 2, 2, 2], [2, 2, 2, 2], 4, 0],
-      [[3, 3, 3, 3], [3, 3, 3, 3], 4, 0],
-      [[4, 4, 4, 4], [4, 4, 4, 4], 4, 0],
 
       [[0, 0, 0, 0], [1, 1, 1, 1], 0, 0],
       [[1, 1, 1, 1], [2, 2, 2, 2], 0, 0],
@@ -150,36 +146,58 @@ describe('example to-do app', () => {
       [[0, 2, 3, 4], [2, 0, 4, 3], 0, 4],
     ].forEach(([suggestion, puzzle, blacks, whites]) => {
       describe(`when input is ${getColorsFromCombination(suggestion)} and the puzzle is ${getColorsFromCombination(puzzle)}`, () => {
-        beforeEach(() => {
-          setCombination(puzzle);
-          inputCombination(suggestion);
-          cy.get('#respond').click();
+        before(() => {
+          visitPage();
+          cy.window().then((win) => {
+            combinationSelector = win.selectors.combinationSelector;
+            setCombination = win.actions.setCombination;
+
+            setCombination(puzzle);
+            inputCombination(suggestion);
+          });
         });
 
-        it(`responds with ${blacks} blacks and ${whites} whites`, () => {
-          const responseSet = cy.get('board row.response set.small');
-          responseSet.get('hole.black').should('have.length', blacks);
-          responseSet.get('hole.white').should('have.length', whites);
+        it('enables Respond button', () => {
+          cy.get('#respond').should('not.be.disabled');
+        });
+
+        describe('and Respond is clicked', () => {
+          before(() => {
+            respond();
+          });
+
+          it('removes active class from bottom-most row', () => {
+            cy.get('board row:last-of-type').should('not.have.class', 'active');
+          });
+
+          it('sets response class on a bottom-most row', () => {
+            cy.get('board row:last-of-type').should('have.class', 'response');
+          });
+
+          it('activates the second bottom-most row', () => {
+            cy.get('board row:nth-last-of-type(2)').should('have.class', 'active');
+          });
+
+          it(`responds with ${blacks} blacks and ${whites} whites`, () => {
+            cy.get('board row.response set.small').within(() => {
+              cy.get('hole.black').should('have.length', blacks);
+              cy.get('hole.white').should('have.length', whites);
+            });
+          });
         });
       });
-    });
 
-    describe('when the combination placed into the active row matches the puzzle combination', () => {
-      beforeEach(() => {
-        puzzleCombination.forEach((holeValue, index) => {
-          for (let i = 0; i <= holeValue; i++) {
-            getActiveHoleAtIndex(index).click();
-          }
-        });
-      });
+      describe('when user puts in puzzle combination and clicks Respond', () => {
+        before(() => {
+          visitPage();
+          cy.window().then((win) => {
+            combinationSelector = win.selectors.combinationSelector;
+            setCombination = win.actions.setCombination;
 
-      it('enables Respond button', () => {
-        cy.get('#respond').should('not.be.disabled');
-      });
-
-      describe('and Respond is clicked', () => {
-        beforeEach(() => {
-          cy.get('#respond').click();
+            setCombination(puzzle);
+            inputCombination(puzzle);
+            respond();
+          });
         });
 
         it('removes active class from bottom-most row', () => {
@@ -195,9 +213,7 @@ describe('example to-do app', () => {
         });
 
         it(`responds with ${combinationLength} black chips`, () => {
-          for (let i = 0; i < combinationLength; i++) {
-            getResponseHoleAtIndex(i).should('have.class', 'black');
-          }
+          cy.get('board row.response set.small hole.black').should('have.length', combinationLength);
         });
 
         it('shows up winning message', () => {
@@ -208,23 +224,28 @@ describe('example to-do app', () => {
           cy.get('#combination').should('be.visible');
           cy.get('#combination set.large hole').should($holes => {
             for (let i = 0; i < combinationLength; i++) {
-              expect($holes.eq(i)).to.have.class(colors[puzzleCombination[i]]);
+              expect($holes.eq(i)).to.have.class(colors[puzzle[i]]);
             }
-          })
+          });
         });
       });
     });
 
     describe('when you are out of rows', () => {
-      beforeEach(() => {
-        setCombination([1, 0, 0, 0]);
-        for (let i = 0; i < rowNumber * combinationLength; i++) {
-          getActiveHoleAtIndex(i % combinationLength).click();
+      const puzzle = [1, 0, 0, 0];
 
-          if (i % combinationLength === combinationLength - 1) {
-            cy.get('#respond').click();
+      before(() => {
+        visitPage();
+        cy.window().then((win) => {
+          combinationSelector = win.selectors.combinationSelector;
+          setCombination = win.actions.setCombination;
+
+          setCombination(puzzle);
+          for (let i = 0; i < rowNumber; i++) {
+            inputCombination([0, 0, 0, 0]);
+            respond();
           }
-        }
+        });
       });
 
       it('shows up losing message', () => {
@@ -234,24 +255,46 @@ describe('example to-do app', () => {
       it('disables Respond button', () => {
         cy.get('#respond').should('be.disabled');
       });
+
+      describe('and Restart game button is clicked', () => {
+        before(() => {
+          cy.get('#restart').click();
+        });
+
+        it('preserves puzzle combination', () => {
+          const newCombination = combinationSelector();
+          expect(newCombination).to.equal(puzzle);
+        });
+
+        describe('and the combination is put in', () => {
+          before(() => {
+            inputCombination(puzzle);
+          });
+
+          it('does not show the response', () => {
+            cy.get('row.active set.small hole.black').should('have.length', 0);
+            cy.get('row.active set.small hole.white').should('have.length', 0);
+          });
+        });
+      })
     });
 
     describe('when the last row is winning', () => {
-      beforeEach(() => {
-        setCombination([1, 0, 0, 0]);
-        for (let i = 0; i < (rowNumber - 1) * combinationLength; i++) {
-          getActiveHoleAtIndex(i % combinationLength).click();
-
-          if (i % combinationLength === combinationLength - 1) {
-            cy.get('#respond').click();
+      const puzzle = [1, 0, 0, 0];
+      before(() => {
+        visitPage();
+        cy.window().then((win) => {
+          combinationSelector = win.selectors.combinationSelector;
+          setCombination = win.actions.setCombination;
+          setCombination(puzzle);
+          for (let i = 0; i < rowNumber - 1; i++) {
+            inputCombination([0, 0, 0, 0]);
+            respond();
           }
-        }
 
-        getActiveHoleAtIndex(0).click().click();
-        getActiveHoleAtIndex(1).click();
-        getActiveHoleAtIndex(2).click();
-        getActiveHoleAtIndex(3).click();
-        cy.get('#respond').click();
+          inputCombination(puzzle);
+          respond();
+        });
       });
 
       it('shows up winning message', () => {
@@ -259,9 +302,7 @@ describe('example to-do app', () => {
       });
 
       it(`responds with ${combinationLength} black chips`, () => {
-        for (let i = 0; i < combinationLength; i++) {
-          getResponseHoleAtIndex(i).should('have.class', 'black');
-        }
+        cy.get('board row.response:first-of-type set.small hole.black').should('have.length', combinationLength);
       });
 
       it('disables Respond button', () => {
